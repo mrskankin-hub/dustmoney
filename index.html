@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>産廃計算システム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>産廃計算システム</h1>
+  <div class="mini-total" id="miniTotal">合計（税込）: ¥0</div>
+</header>
+
+<main>
+
+  <!-- 会社選択 -->
+  <section class="panel">
+    <div class="company-tabs" id="companyTabs" role="group" aria-label="処分業者の選択"></div>
+  </section>
+
+  <!-- 単価表 -->
+  <details class="panel" id="priceTablePanel">
+    <summary>単価表を表示・編集</summary>
+    <p class="hint">価格は写真から書き起こしたものです。実物の単価表と照らし合わせ、違いがあれば下の欄を直接書き換えてください（自動的に保存されます）。</p>
+    <div id="tieredRatesArea"></div>
+    <div id="priceTableBody"></div>
+  </details>
+
+  <!-- 写真アップロード -->
+  <section class="panel">
+    <h2>計量伝票の写真からOCR</h2>
+    <label class="btn-photo">
+      📷 写真を撮る／選択
+      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+    </label>
+    <div id="photoPreviewWrap" class="hidden">
+      <img id="photoPreview" alt="アップロードした伝票のプレビュー">
+    </div>
+    <button type="button" id="runOcrBtn" class="btn-primary" disabled>OCR実行</button>
+    <p class="hint">初回のみ言語データのダウンロードで時間がかかります。</p>
+    <div id="ocrProgressWrap" class="hidden">
+      <progress id="ocrProgress" value="0" max="1"></progress>
+      <span id="ocrStatus"></span>
+    </div>
+    <details id="ocrRawWrap" class="hidden">
+      <summary>OCR結果（生データ）</summary>
+      <textarea id="ocrRawText" readonly rows="6"></textarea>
+    </details>
+    <div id="forbiddenWarning" class="warning hidden"></div>
+    <div id="ocrSuggestions"></div>
+  </section>
+
+  <!-- 計算行 -->
+  <section class="panel">
+    <h2>計算</h2>
+    <div class="global-toggles">
+      <label class="toggle"><input type="checkbox" id="cashPaymentToggle"> 現金払い（対象品目 -¥500）</label>
+      <div id="deliveryMethodArea" class="hidden"></div>
+    </div>
+    <button type="button" id="addRowBtn" class="btn-primary">＋ 行を追加</button>
+    <div id="calcRows"></div>
+
+    <div id="totalsArea" class="totals">
+      <div>小計（税抜）: <span id="subtotalExcl">¥0</span></div>
+      <div>消費税: <span id="taxAmount">¥0</span></div>
+      <div class="total-line">合計（税込）: <span id="totalIncl">¥0</span></div>
+      <div id="unconfirmedWarning" class="warning hidden"></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="saveCalcBtn" class="btn-primary">この計算を保存</button>
+      <button type="button" id="clearCalcBtn" class="btn-secondary">計算をクリア</button>
+    </div>
+  </section>
+
+  <!-- 履歴 -->
+  <details class="panel" id="historyPanel">
+    <summary>履歴</summary>
+    <div id="historyList"></div>
+    <button type="button" id="clearHistoryBtn" class="btn-secondary">履歴をすべて削除</button>
+  </details>
+
+</main>
+
+<template id="calcRowTemplate">
+  <div class="calc-row" data-row-id="">
+    <div class="row-main">
+      <input type="text" class="item-filter" placeholder="品目を検索...">
+      <select class="item-select"></select>
+    </div>
+    <div class="row-inputs"></div>
+    <div class="row-subtotal">
+      <div>小計（税抜）: <span class="line-excl">¥0</span></div>
+      <div>小計（税込）: <span class="line-incl">¥0</span></div>
+    </div>
+    <div class="row-footer">
+      <label class="toggle small"><input type="checkbox" class="confirmed-check"> 確認済み</label>
+      <button type="button" class="row-remove btn-danger">✕ 削除</button>
+    </div>
+  </div>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
