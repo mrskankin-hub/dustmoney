@@ -238,6 +238,11 @@ const Parser = {
     if (!m) return null;
     return { qty: parseFloat(m[1]), unit: m[2].toLowerCase(), matchText: m[0], index: m.index };
   },
+  extractBareNumber(normalizedLine) {
+    const t = normalizedLine.trim().replace(/,/g, '');
+    if (!t || !/^\d+(?:\.\d+)?$/.test(t)) return null;
+    return parseFloat(t);
+  },
   candidateName(normalizedLine, match) {
     let name = normalizedLine.slice(0, match.index) + normalizedLine.slice(match.index + match.matchText.length);
     return name.replace(/^[\s\d.．)　・-]+/, '').trim();
@@ -260,6 +265,12 @@ const Parser = {
     return (2 * matches) / (bgA.length + bgB.length);
   },
   matchItem(candidateNameStr, items) {
+    const trimmed = (candidateNameStr || '').trim();
+    if (trimmed) {
+      const aliasMatch = items.find((item) => !item.disabled && item.aliases
+        && item.aliases.some((a) => a.toLowerCase() === trimmed.toLowerCase()));
+      if (aliasMatch) return { item: aliasMatch, score: 1 };
+    }
     const target = Parser.stripParenthetical(candidateNameStr);
     let best = null, bestScore = 0;
     items.forEach((item) => {
@@ -271,19 +282,37 @@ const Parser = {
   },
   parseOcrText(lines, company) {
     const suggestions = [];
+    let lastCandidateLine = null;
     lines.forEach((rawLine) => {
       const norm = Parser.normalizeLine(rawLine);
       const qu = Parser.extractQuantityUnit(norm);
-      if (!qu) return;
-      const candName = Parser.candidateName(norm, qu);
-      const { item, score } = Parser.matchItem(candName, company.items);
-      suggestions.push({
-        rawLine, qty: qu.qty, unit: qu.unit,
-        matchedItemId: item ? item.id : null,
-        matchedItemName: item ? item.name : (candName || rawLine),
-        score,
-        unitMismatch: item ? (item.unit && item.unit !== qu.unit) : false,
-      });
+      if (qu) {
+        const candName = Parser.candidateName(norm, qu);
+        const { item, score } = Parser.matchItem(candName, company.items);
+        suggestions.push({
+          rawLine, qty: qu.qty, unit: qu.unit,
+          matchedItemId: item ? item.id : null,
+          matchedItemName: item ? item.name : (candName || rawLine),
+          score,
+          unitMismatch: item ? (item.unit && item.unit !== qu.unit) : false,
+        });
+        lastCandidateLine = null;
+        return;
+      }
+      const bareQty = Parser.extractBareNumber(norm);
+      if (bareQty !== null && lastCandidateLine) {
+        const { item, score } = Parser.matchItem(lastCandidateLine, company.items);
+        suggestions.push({
+          rawLine: `${lastCandidateLine} → ${rawLine}`, qty: bareQty, unit: null,
+          matchedItemId: item ? item.id : null,
+          matchedItemName: item ? item.name : lastCandidateLine,
+          score,
+          unitMismatch: false,
+        });
+        lastCandidateLine = null;
+        return;
+      }
+      if (norm.trim()) lastCandidateLine = norm.trim();
     });
     return suggestions;
   },
@@ -826,7 +855,7 @@ const UI = {
       card.appendChild(nameDiv);
 
       const qtyDiv = document.createElement('div');
-      qtyDiv.textContent = `数量: ${s.qty} ${s.unit}`;
+      qtyDiv.textContent = `数量: ${s.qty}${s.unit ? ' ' + s.unit : '（単位不明）'}`;
       if (s.unitMismatch) {
         const span = document.createElement('span');
         span.className = 'unit-mismatch';
