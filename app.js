@@ -1016,7 +1016,8 @@ function init() {
   });
 
   document.getElementById('addRowBtn').addEventListener('click', () => Calc.addRow({}));
-  document.getElementById('photoInput').addEventListener('change', UI.onPhotoSelected);
+  document.getElementById('photoInputCamera').addEventListener('change', UI.onPhotoSelected);
+  document.getElementById('photoInputLibrary').addEventListener('change', UI.onPhotoSelected);
   document.getElementById('runOcrBtn').addEventListener('click', UI.onRunOcr);
   document.getElementById('saveCalcBtn').addEventListener('click', UI.onSaveCalc);
   document.getElementById('clearCalcBtn').addEventListener('click', UI.onClearCalc);

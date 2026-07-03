@@ -167,6 +167,12 @@ button {
 .btn-danger { background: none; color: var(--color-danger); border: 1px solid var(--color-danger); }
 
 /* 写真アップロード */
+.photo-btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
 .btn-photo {
   display: flex;
   align-items: center;
@@ -178,7 +184,15 @@ button {
   font-size: 1.05rem;
   font-weight: bold;
   cursor: pointer;
-  margin-bottom: var(--space-3);
+}
+.btn-photo-secondary {
+  background: #e8e9eb;
+  color: var(--color-text);
+}
+
+@media (min-width: 700px) {
+  .photo-btn-row { flex-direction: row; }
+  .photo-btn-row .btn-photo { flex: 1; }
 }
 #photoPreviewWrap { margin-bottom: var(--space-3); }
 #photoPreview {

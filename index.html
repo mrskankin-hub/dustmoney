@@ -31,10 +31,16 @@
   <!-- 写真アップロード -->
   <section class="panel">
     <h2>計量伝票の写真からOCR</h2>
-    <label class="btn-photo">
-      📷 写真を撮る／選択
-      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
-    </label>
+    <div class="photo-btn-row">
+      <label class="btn-photo">
+        📷 写真を撮る
+        <input type="file" id="photoInputCamera" accept="image/*" capture="environment" hidden>
+      </label>
+      <label class="btn-photo btn-photo-secondary">
+        🖼 アルバムから選択
+        <input type="file" id="photoInputLibrary" accept="image/*" hidden>
+      </label>
+    </div>
     <div id="photoPreviewWrap" class="hidden">
       <img id="photoPreview" alt="アップロードした伝票のプレビュー">
     </div>
